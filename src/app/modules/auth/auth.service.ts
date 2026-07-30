@@ -3,11 +3,15 @@ import jwt, { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
 import config from "../../../config";
 import { AppError } from "../../error/AppError";
 import { prisma } from "../../lib/prisma";
+import { OAuth2Client } from "google-auth-library";
 import {
   IChangePassword,
+  IGoogleLogin,
   ILoginUser,
   IRegisterUser,
 } from "./auth.interface";
+
+const googleClient = new OAuth2Client(); // Audience check usually optional if validating directly, but good practice if available
 
 const registerUser = async (payload: IRegisterUser) => {
   const isUserExist = await prisma.user.findUnique({
@@ -60,6 +64,10 @@ const loginUser = async (payload: ILoginUser) => {
     throw new AppError(`User account is ${user.status}`, 403);
   }
 
+  if (!user.password) {
+    throw new AppError("Password is not set for this account", 400);
+  }
+
   const isPasswordMatched = await bcrypt.compare(
     payload.password,
     user.password
@@ -67,6 +75,63 @@ const loginUser = async (payload: ILoginUser) => {
 
   if (!isPasswordMatched) {
     throw new AppError("Invalid credentials", 401);
+  }
+
+  const jwtPayload = {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = jwt.sign(jwtPayload, config.jwt.secret as Secret, {
+    expiresIn: config.jwt.expire_in as SignOptions["expiresIn"],
+  });
+
+  const { password, ...result } = user;
+
+  return {
+    accessToken,
+    user: result,
+  };
+};
+
+const googleLogin = async (payload: IGoogleLogin) => {
+  const ticket = await googleClient.verifyIdToken({
+    idToken: payload.idToken,
+    // audience: process.env.GOOGLE_CLIENT_ID, // Add your client ID in .env later
+  });
+  
+  const googleUser = ticket.getPayload();
+  
+  if (!googleUser || !googleUser.email) {
+    throw new AppError("Invalid Google token", 401);
+  }
+
+  let user = await prisma.user.findUnique({
+    where: { email: googleUser.email },
+  });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email: googleUser.email,
+        name: googleUser.name || "Google User",
+        provider: "google",
+        googleId: googleUser.sub,
+        isVerified: true,
+      },
+    });
+  } else {
+    if (user.status === "blocked" || user.status === "inactive") {
+      throw new AppError(`User account is ${user.status}`, 403);
+    }
+    
+    if (!user.googleId) {
+      await prisma.user.update({
+        where: { email: googleUser.email },
+        data: { googleId: googleUser.sub, provider: "google" }
+      });
+    }
   }
 
   const jwtPayload = {
@@ -99,6 +164,10 @@ const changePassword = async (
 
   if (!user) {
     throw new AppError("User does not exist", 404);
+  }
+
+  if (!user.password) {
+    throw new AppError("Password is not set for this account", 400);
   }
 
   const isPasswordMatched = await bcrypt.compare(
@@ -170,4 +239,5 @@ export const AuthService = {
   loginUser,
   changePassword,
   refreshToken,
+  googleLogin,
 };

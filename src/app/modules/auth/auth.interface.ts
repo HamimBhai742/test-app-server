@@ -17,3 +17,7 @@ export interface IChangePassword {
 export interface IRefreshToken {
   token: string;
 }
+
+export interface IGoogleLogin {
+  idToken: string;
+}

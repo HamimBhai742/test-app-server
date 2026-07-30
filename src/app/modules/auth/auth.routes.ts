@@ -31,4 +31,10 @@ router.post(
   AuthController.refreshToken
 );
 
+router.post(
+  "/google-login",
+  validateRequest(AuthValidation.googleLoginValidationSchema),
+  AuthController.googleLogin
+);
+
 export const authRoutes = router;

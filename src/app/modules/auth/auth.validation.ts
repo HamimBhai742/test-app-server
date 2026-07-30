@@ -39,9 +39,16 @@ const refreshTokenValidationSchema = z.object({
   }).optional(),
 });
 
+const googleLoginValidationSchema = z.object({
+  body: z.object({
+    idToken: z.string({ required_error: "idToken is required" }),
+  }),
+});
+
 export const AuthValidation = {
   registerValidationSchema,
   loginValidationSchema,
   changePasswordValidationSchema,
   refreshTokenValidationSchema,
+  googleLoginValidationSchema,
 };
