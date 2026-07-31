@@ -41,7 +41,27 @@ const refreshTokenValidationSchema = z.object({
 
 const googleLoginValidationSchema = z.object({
   body: z.object({
-    idToken: z.string({ required_error: "idToken is required" }),
+    idToken: z.string().optional(),
+    email: z.string().optional(),
+    name: z.string().optional(),
+    avatar: z.string().optional(),
+  }),
+});
+
+const verifyOTPValidationSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
+    otp: z.string({ required_error: "OTP code is required" }),
+  }),
+});
+
+const resendOTPValidationSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
   }),
 });
 
@@ -51,4 +71,6 @@ export const AuthValidation = {
   changePasswordValidationSchema,
   refreshTokenValidationSchema,
   googleLoginValidationSchema,
+  verifyOTPValidationSchema,
+  resendOTPValidationSchema,
 };

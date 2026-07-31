@@ -60,8 +60,32 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const verifyOTP = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.verifyOTP(req.body);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "OTP verified successfully",
+    data: result,
+  });
+});
+
+const resendOTP = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.resendOTP(req.body);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "New OTP sent successfully",
+    data: result,
+  });
+});
+
 export const AuthController = {
   registerUser,
+  verifyOTP,
+  resendOTP,
   loginUser,
   changePassword,
   refreshToken,

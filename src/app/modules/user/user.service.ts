@@ -9,6 +9,7 @@ const getMe = async (userId: string) => {
       id: true,
       name: true,
       email: true,
+      avatar: true,
       role: true,
       status: true,
       isVerified: true,
@@ -40,6 +41,7 @@ const updateMe = async (userId: string, payload: IUpdateProfile) => {
       id: true,
       name: true,
       email: true,
+      avatar: true,
       role: true,
       status: true,
       isVerified: true,
@@ -57,6 +59,7 @@ const getAllUsers = async () => {
       id: true,
       name: true,
       email: true,
+      avatar: true,
       role: true,
       status: true,
       isVerified: true,
@@ -75,6 +78,7 @@ const getUserById = async (userId: string) => {
       id: true,
       name: true,
       email: true,
+      avatar: true,
       role: true,
       status: true,
       isVerified: true,
@@ -120,9 +124,36 @@ const updateUserStatus = async (
   return updatedUser;
 };
 
+const uploadAvatar = async (userId: string, imageBase64: string) => {
+  const { uploadToCloudinary } = await import("../../utils/cloudinary");
+  const imageUrl = await uploadToCloudinary(imageBase64, "hisab_kitab/avatars");
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { avatar: imageUrl },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      avatar: true,
+      role: true,
+      status: true,
+      isVerified: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return {
+    url: imageUrl,
+    user: updatedUser,
+  };
+};
+
 export const UserService = {
   getMe,
   updateMe,
+  uploadAvatar,
   getAllUsers,
   getUserById,
   updateUserStatus,

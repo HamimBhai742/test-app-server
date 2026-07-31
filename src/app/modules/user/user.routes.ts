@@ -15,6 +15,8 @@ router.patch(
   UserController.updateMe
 );
 
+router.post("/upload-avatar", auth("user", "admin"), UserController.uploadAvatar);
+
 router.get("/", auth("admin"), UserController.getAllUsers);
 
 router.get("/:id", auth("admin"), UserController.getUserById);

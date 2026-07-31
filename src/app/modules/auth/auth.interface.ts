@@ -19,5 +19,17 @@ export interface IRefreshToken {
 }
 
 export interface IGoogleLogin {
-  idToken: string;
+  idToken?: string;
+  email?: string;
+  name?: string;
+  avatar?: string;
+}
+
+export interface IVerifyOTP {
+  email: string;
+  otp: string;
+}
+
+export interface IResendOTP {
+  email: string;
 }
