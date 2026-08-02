@@ -15,4 +15,5 @@ export default {
     api_secret: process.env.CLOUDINARY_API_SECRET || "",
     upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET || "hisab_kitab_preset",
   },
+  google_client_id: process.env.GOOGLE_CLIENT_ID || "",
 };

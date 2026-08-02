@@ -14,7 +14,7 @@ import {
   IResendOTP,
 } from "./auth.interface";
 
-const googleClient = new OAuth2Client();
+const googleClient = new OAuth2Client(config.google_client_id);
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -194,6 +194,7 @@ const googleLogin = async (payload: IGoogleLogin) => {
     try {
       const ticket = await googleClient.verifyIdToken({
         idToken: payload.idToken,
+        audience: config.google_client_id || undefined,
       });
       const googleUser = ticket.getPayload();
       if (googleUser && googleUser.email) {
