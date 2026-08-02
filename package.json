@@ -7,7 +7,10 @@
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/server.ts",
     "build": "prisma generate && tsc",
     "postinstall": "prisma generate",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "docker:build": "docker build -t hisabkitab-server .",
+    "docker:run": "docker run -d -p 5042:5042 --env-file .env --name hisabkitab-server hisabkitab-server",
+    "docker:compose": "docker compose up -d --build"
   },
   "keywords": [
     "express",

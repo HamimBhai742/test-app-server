@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hisabkitab-server
+    restart: unless-stopped
+    ports:
+      - "5042:5042"
+    env_file:
+      - .env
+    environment:
+      - PORT=5042
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5042/api/v1/user/me || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
