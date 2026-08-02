@@ -4,6 +4,7 @@ const updateProfileValidationSchema = z.object({
   body: z.object({
     name: z.string().optional(),
     avatar: z.string().optional(),
+    pushToken: z.string().optional(),
   }),
 });
 
