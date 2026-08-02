@@ -1,6 +1,7 @@
 export interface IUpdateProfile {
   name?: string;
   avatar?: string;
+  pushToken?: string;
 }
 
 export interface IUpdateUserStatus {

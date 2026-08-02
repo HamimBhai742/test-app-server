@@ -3,6 +3,7 @@ import { authRoutes } from "../modules/auth/auth.routes";
 import { userRoutes } from "../modules/user/user.routes";
 import { transactionRoutes } from "../modules/transaction/transaction.routes";
 import { dueRoutes } from "../modules/due/due.routes";
+import { NotificationRoutes } from "../modules/notification/notification.route";
 
 export const router = Router();
 
@@ -22,6 +23,10 @@ const moduleRoutes: Array<{ path: string; route: Router }> = [
   {
     path: "/dues",
     route: dueRoutes,
+  },
+  {
+    path: "/notifications",
+    route: NotificationRoutes,
   },
 ];
 
