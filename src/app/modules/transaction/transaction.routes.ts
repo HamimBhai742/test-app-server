@@ -6,16 +6,17 @@ import { TransactionValidation } from "./transaction.validation";
 
 const router = Router();
 
-router.get("/", TransactionController.getAllTransactions);
+router.get("/", auth("user", "admin"), TransactionController.getAllTransactions);
 
 router.post(
   "/",
+  auth("user", "admin"),
   validateRequest(TransactionValidation.createTransactionValidationSchema),
   TransactionController.createTransaction
 );
 
-router.delete("/all", TransactionController.deleteAllTransactions);
+router.delete("/all", auth("user", "admin"), TransactionController.deleteAllTransactions);
 
-router.delete("/:id", TransactionController.deleteTransaction);
+router.delete("/:id", auth("user", "admin"), TransactionController.deleteTransaction);
 
 export const transactionRoutes = router;
