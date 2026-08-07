@@ -2,6 +2,11 @@ import { AppError } from "../../error/AppError";
 import { prisma } from "../../lib/prisma";
 import { IUpdateProfile, IUpdateUserStatus } from "./user.interface";
 
+const getBangladeshDateString = (date: Date = new Date()): string => {
+  const bstDate = new Date(date.getTime() + 6 * 60 * 60 * 1000);
+  return bstDate.toISOString().split("T")[0];
+};
+
 const getMe = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -30,10 +35,10 @@ const getMe = async (userId: string) => {
   let points = user.points ?? 50;
   let needsUpdate = false;
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getBangladeshDateString(new Date());
 
   if (user.lastLoginRewardClaimedAt) {
-    const claimDate = user.lastLoginRewardClaimedAt.toISOString().split("T")[0];
+    const claimDate = getBangladeshDateString(user.lastLoginRewardClaimedAt);
     if (claimDate === todayStr && points < 60) {
       // Only increase, never decrease — use Math.max to preserve higher values
       points = Math.max(points, 60);
@@ -42,7 +47,7 @@ const getMe = async (userId: string) => {
   }
 
   if (user.lastTxRewardClaimedAt) {
-    const claimDate = user.lastTxRewardClaimedAt.toISOString().split("T")[0];
+    const claimDate = getBangladeshDateString(user.lastTxRewardClaimedAt);
     if (claimDate === todayStr && points < 70) {
       // Only increase, never decrease — use Math.max to preserve higher values
       points = Math.max(points, 70);
@@ -191,11 +196,6 @@ const uploadAvatar = async (userId: string, imageBase64: string) => {
     url: imageUrl,
     user: updatedUser,
   };
-};
-
-const getBangladeshDateString = (date: Date = new Date()): string => {
-  const bstDate = new Date(date.getTime() + 6 * 60 * 60 * 1000);
-  return bstDate.toISOString().split("T")[0];
 };
 
 const claimDailyLoginReward = async (userId: string) => {
