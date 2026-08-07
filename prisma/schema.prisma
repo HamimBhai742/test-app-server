@@ -8,23 +8,26 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  email        String        @unique
-  password     String?
-  avatar       String?
-  provider     String        @default("local")
-  googleId     String?
-  role         Role          @default(user)
-  status       Status        @default(active)
-  isVerified   Boolean       @default(false)
-  otp          String?
-  otpExpires   DateTime?
-  pushToken    String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  transactions Transaction[]
-  dues         Due[]
+  id                      String        @id @default(auto()) @map("_id") @db.ObjectId
+  name                    String
+  email                   String        @unique
+  password                String?
+  avatar                  String?
+  provider                String        @default("local")
+  googleId                String?
+  role                    Role          @default(user)
+  status                  Status        @default(active)
+  isVerified              Boolean       @default(false)
+  otp                     String?
+  otpExpires              DateTime?
+  pushToken               String?
+  points                  Int           @default(50)
+  lastLoginRewardClaimedAt DateTime?
+  lastTxRewardClaimedAt    DateTime?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  transactions            Transaction[]
+  dues                    Due[]
 }
 
 model Transaction {

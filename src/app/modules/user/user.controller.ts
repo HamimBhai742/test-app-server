@@ -79,6 +79,57 @@ const uploadAvatar = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const claimDailyLogin = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user!;
+  const result = await UserService.claimDailyLoginReward(user.id);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Daily login reward claimed successfully",
+    data: result,
+  });
+});
+
+const claimDailyTx = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user!;
+  const result = await UserService.claimDailyTxReward(user.id);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Daily transaction reward claimed successfully",
+    data: result,
+  });
+});
+
+const addPoints = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user!;
+  const { amount } = req.body;
+  if (!amount || typeof amount !== "number" || amount <= 0) {
+    throw new AppError("Invalid amount", 400);
+  }
+  const result = await UserService.addPointsSecure(user.id, amount);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Points added successfully",
+    data: result,
+  });
+});
+
+const getLeaderboard = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getLeaderboard();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Leaderboard retrieved successfully",
+    data: result,
+  });
+});
+
 export const UserController = {
   getMe,
   updateMe,
@@ -86,4 +137,8 @@ export const UserController = {
   getAllUsers,
   getUserById,
   updateUserStatus,
+  claimDailyLogin,
+  claimDailyTx,
+  addPoints,
+  getLeaderboard,
 };

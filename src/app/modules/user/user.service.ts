@@ -14,6 +14,9 @@ const getMe = async (userId: string) => {
       status: true,
       isVerified: true,
       pushToken: true,
+      points: true,
+      lastLoginRewardClaimedAt: true,
+      lastTxRewardClaimedAt: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -47,6 +50,9 @@ const updateMe = async (userId: string, payload: IUpdateProfile) => {
       status: true,
       isVerified: true,
       pushToken: true,
+      points: true,
+      lastLoginRewardClaimedAt: true,
+      lastTxRewardClaimedAt: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -141,6 +147,9 @@ const uploadAvatar = async (userId: string, imageBase64: string) => {
       role: true,
       status: true,
       isVerified: true,
+      points: true,
+      lastLoginRewardClaimedAt: true,
+      lastTxRewardClaimedAt: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -152,6 +161,118 @@ const uploadAvatar = async (userId: string, imageBase64: string) => {
   };
 };
 
+const claimDailyLoginReward = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const todayStr = new Date().toISOString().split("T")[0];
+  if (user.lastLoginRewardClaimedAt) {
+    const lastClaimedStr = user.lastLoginRewardClaimedAt.toISOString().split("T")[0];
+    if (todayStr === lastClaimedStr) {
+      throw new AppError("Daily login reward already claimed today", 400);
+    }
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      points: { increment: 10 },
+      lastLoginRewardClaimedAt: new Date(),
+    },
+    select: {
+      id: true,
+      name: true,
+      points: true,
+      lastLoginRewardClaimedAt: true,
+      lastTxRewardClaimedAt: true,
+    },
+  });
+
+  return updatedUser;
+};
+
+const claimDailyTxReward = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const todayStr = new Date().toISOString().split("T")[0];
+  if (user.lastTxRewardClaimedAt) {
+    const lastClaimedStr = user.lastTxRewardClaimedAt.toISOString().split("T")[0];
+    if (todayStr === lastClaimedStr) {
+      throw new AppError("Daily transaction reward already claimed today", 400);
+    }
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      points: { increment: 10 },
+      lastTxRewardClaimedAt: new Date(),
+    },
+    select: {
+      id: true,
+      name: true,
+      points: true,
+      lastLoginRewardClaimedAt: true,
+      lastTxRewardClaimedAt: true,
+    },
+  });
+
+  return updatedUser;
+};
+
+const addPointsSecure = async (userId: string, amount: number) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      points: { increment: amount },
+    },
+    select: {
+      id: true,
+      name: true,
+      points: true,
+      lastLoginRewardClaimedAt: true,
+      lastTxRewardClaimedAt: true,
+    },
+  });
+
+  return updatedUser;
+};
+
+const getLeaderboard = async () => {
+  const leaderboard = await prisma.user.findMany({
+    orderBy: {
+      points: "desc",
+    },
+    select: {
+      id: true,
+      name: true,
+      avatar: true,
+      points: true,
+    },
+  });
+
+  return leaderboard;
+};
+
 export const UserService = {
   getMe,
   updateMe,
@@ -159,4 +280,8 @@ export const UserService = {
   getAllUsers,
   getUserById,
   updateUserStatus,
+  claimDailyLoginReward,
+  claimDailyTxReward,
+  addPointsSecure,
+  getLeaderboard,
 };
