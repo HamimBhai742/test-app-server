@@ -53,9 +53,23 @@ const deleteDue = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateDue = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user?.id;
+  const result = await DueService.updateDue(id, userId, req.body);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Due record updated successfully",
+    data: result,
+  });
+});
+
 export const DueController = {
   createDue,
   getAllDues,
   toggleSettleDue,
   deleteDue,
+  updateDue,
 };

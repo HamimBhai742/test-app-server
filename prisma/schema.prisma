@@ -28,6 +28,8 @@ model User {
   updatedAt               DateTime      @updatedAt
   transactions            Transaction[]
   dues                    Due[]
+  goals                   Goal[]
+  investments             InvestmentProject[]
 }
 
 model Transaction {
@@ -58,6 +60,46 @@ model Due {
   updatedAt  DateTime @updatedAt
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Goal {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  name          String
+  targetAmount  Float
+  description   String?
+  isCompleted   Boolean  @default(false)
+  pointsAwarded Int
+  createdAt     String
+  history       SavingsLog[]
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+type SavingsLog {
+  id     String
+  amount Float
+  date   String
+  note   String?
+}
+
+model InvestmentProject {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  name         String
+  targetBudget Float?
+  description  String?
+  createdAt    String
+  logs         InvestmentLog[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+type InvestmentLog {
+  id     String
+  title  String
+  amount Float
+  date   String
 }
 
 enum Status {

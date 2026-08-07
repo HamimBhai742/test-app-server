@@ -62,9 +62,30 @@ const deleteDue = async (id: string, userId?: string) => {
   return deleted;
 };
 
+const updateDue = async (id: string, userId: string | undefined, payload: Partial<ICreateDue>) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+    throw new AppError("Invalid Due ID format", 400);
+  }
+
+  const existing = await prisma.due.findUnique({
+    where: { id },
+  });
+
+  if (!existing) {
+    throw new AppError("Due record not found", 404);
+  }
+
+  const updated = await prisma.due.update({
+    where: { id },
+    data: payload,
+  });
+  return updated;
+};
+
 export const DueService = {
   createDue,
   getAllDues,
   toggleSettleDue,
   deleteDue,
+  updateDue,
 };
