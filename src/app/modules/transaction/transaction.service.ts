@@ -82,9 +82,32 @@ const deleteAllTransactions = async (userId?: string) => {
   return { message: "All transactions deleted successfully" };
 };
 
+const updateTransaction = async (id: string, userId: string | undefined, payload: Partial<ICreateTransaction>) => {
+  const transaction = await prisma.transaction.findUnique({
+    where: { id },
+  });
+
+  if (!transaction) {
+    throw new AppError("Transaction not found", 404);
+  }
+
+  // Only allow the owner to update
+  if (userId && transaction.userId && transaction.userId !== userId) {
+    throw new AppError("Unauthorized to update this transaction", 403);
+  }
+
+  const updated = await prisma.transaction.update({
+    where: { id },
+    data: payload,
+  });
+
+  return updated;
+};
+
 export const TransactionService = {
   createTransaction,
   getAllTransactions,
   deleteTransaction,
   deleteAllTransactions,
+  updateTransaction,
 };

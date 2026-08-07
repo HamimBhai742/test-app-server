@@ -34,6 +34,10 @@ const toggleSettleDue = async (id: string, userId?: string) => {
     throw new AppError("Due record not found", 404);
   }
 
+  if (userId && existing.userId && existing.userId !== userId) {
+    throw new AppError("Unauthorized to update this due record", 403);
+  }
+
   const updated = await prisma.due.update({
     where: { id },
     data: {
@@ -48,12 +52,15 @@ const deleteDue = async (id: string, userId?: string) => {
     throw new AppError("Invalid Due ID format", 400);
   }
 
-  // Check if due exists
   const existing = await prisma.due.findUnique({
     where: { id },
   });
   if (!existing) {
     throw new AppError("Due record not found", 404);
+  }
+
+  if (userId && existing.userId && existing.userId !== userId) {
+    throw new AppError("Unauthorized to delete this due record", 403);
   }
 
   const deleted = await prisma.due.delete({
@@ -73,6 +80,10 @@ const updateDue = async (id: string, userId: string | undefined, payload: Partia
 
   if (!existing) {
     throw new AppError("Due record not found", 404);
+  }
+
+  if (userId && existing.userId && existing.userId !== userId) {
+    throw new AppError("Unauthorized to update this due record", 403);
   }
 
   const updated = await prisma.due.update({

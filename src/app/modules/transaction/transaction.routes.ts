@@ -19,4 +19,11 @@ router.delete("/all", auth("user", "admin"), TransactionController.deleteAllTran
 
 router.delete("/:id", auth("user", "admin"), TransactionController.deleteTransaction);
 
+router.patch(
+  "/:id",
+  auth("user", "admin"),
+  validateRequest(TransactionValidation.updateTransactionValidationSchema),
+  TransactionController.updateTransaction
+);
+
 export const transactionRoutes = router;

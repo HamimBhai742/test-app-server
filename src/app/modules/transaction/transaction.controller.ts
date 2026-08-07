@@ -52,9 +52,23 @@ const deleteAllTransactions = catchAsync(async (req: Request, res: Response) => 
   });
 });
 
+const updateTransaction = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user?.id;
+  const result = await TransactionService.updateTransaction(id, userId, req.body);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Transaction updated successfully",
+    data: result,
+  });
+});
+
 export const TransactionController = {
   createTransaction,
   getAllTransactions,
   deleteTransaction,
   deleteAllTransactions,
+  updateTransaction,
 };
