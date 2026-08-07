@@ -1,3 +1,4 @@
+import { AppError } from "../../error/AppError";
 import { prisma } from "../../lib/prisma";
 import { ICreateDue } from "./due.interface";
 
@@ -21,12 +22,16 @@ const getAllDues = async (userId?: string) => {
 };
 
 const toggleSettleDue = async (id: string, userId?: string) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+    throw new AppError("Invalid Due ID format", 400);
+  }
+
   const existing = await prisma.due.findUnique({
     where: { id },
   });
 
   if (!existing) {
-    throw new Error("Due record not found");
+    throw new AppError("Due record not found", 404);
   }
 
   const updated = await prisma.due.update({
@@ -39,6 +44,18 @@ const toggleSettleDue = async (id: string, userId?: string) => {
 };
 
 const deleteDue = async (id: string, userId?: string) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+    throw new AppError("Invalid Due ID format", 400);
+  }
+
+  // Check if due exists
+  const existing = await prisma.due.findUnique({
+    where: { id },
+  });
+  if (!existing) {
+    throw new AppError("Due record not found", 404);
+  }
+
   const deleted = await prisma.due.delete({
     where: { id },
   });
