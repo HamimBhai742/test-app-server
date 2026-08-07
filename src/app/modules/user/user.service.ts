@@ -193,6 +193,11 @@ const uploadAvatar = async (userId: string, imageBase64: string) => {
   };
 };
 
+const getBangladeshDateString = (date: Date = new Date()): string => {
+  const bstDate = new Date(date.getTime() + 6 * 60 * 60 * 1000);
+  return bstDate.toISOString().split("T")[0];
+};
+
 const claimDailyLoginReward = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -202,9 +207,9 @@ const claimDailyLoginReward = async (userId: string) => {
     throw new AppError("User not found", 404);
   }
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getBangladeshDateString(new Date());
   if (user.lastLoginRewardClaimedAt) {
-    const lastClaimedStr = user.lastLoginRewardClaimedAt.toISOString().split("T")[0];
+    const lastClaimedStr = getBangladeshDateString(user.lastLoginRewardClaimedAt);
     if (todayStr === lastClaimedStr) {
       throw new AppError("Daily login reward already claimed today", 400);
     }
@@ -240,9 +245,9 @@ const claimDailyTxReward = async (userId: string) => {
     throw new AppError("User not found", 404);
   }
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getBangladeshDateString(new Date());
   if (user.lastTxRewardClaimedAt) {
-    const lastClaimedStr = user.lastTxRewardClaimedAt.toISOString().split("T")[0];
+    const lastClaimedStr = getBangladeshDateString(user.lastTxRewardClaimedAt);
     if (todayStr === lastClaimedStr) {
       throw new AppError("Daily transaction reward already claimed today", 400);
     }
