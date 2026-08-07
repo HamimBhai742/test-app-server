@@ -29,21 +29,23 @@ const getMe = async (userId: string) => {
   // Self-heal/migration check: If they claimed today but points were not added due to the previous database bug
   let points = user.points ?? 50;
   let needsUpdate = false;
-  
+
   const todayStr = new Date().toISOString().split("T")[0];
-  
+
   if (user.lastLoginRewardClaimedAt) {
     const claimDate = user.lastLoginRewardClaimedAt.toISOString().split("T")[0];
     if (claimDate === todayStr && points < 60) {
-      points = 60;
+      // Only increase, never decrease — use Math.max to preserve higher values
+      points = Math.max(points, 60);
       needsUpdate = true;
     }
   }
-  
+
   if (user.lastTxRewardClaimedAt) {
     const claimDate = user.lastTxRewardClaimedAt.toISOString().split("T")[0];
     if (claimDate === todayStr && points < 70) {
-      points = 70;
+      // Only increase, never decrease — use Math.max to preserve higher values
+      points = Math.max(points, 70);
       needsUpdate = true;
     }
   }
@@ -310,16 +312,20 @@ const getLeaderboard = async () => {
   });
 
   // If the database has fewer than 5 registered users,
-  // merge competitive mock profiles to make the leaderboard look active.
-  if (leaderboard.length < 5) {
-    const mockUsers = [
+  // fill the gap with competitive mock profiles to make the leaderboard look active.
+  const TARGET_SIZE = 5;
+  if (leaderboard.length < TARGET_SIZE) {
+    const allMockUsers = [
       { id: "mock_1", name: "তানভীর হাসান", points: 430, avatar: null },
       { id: "mock_2", name: "সাকিব রহমান", points: 340, avatar: null },
       { id: "mock_3", name: "রফিক উদ্দিন", points: 180, avatar: null },
       { id: "mock_4", name: "আরিফ হোসেন", points: 90, avatar: null },
       { id: "mock_5", name: "হামিম আহমেদ", points: 580, avatar: null },
     ];
-    leaderboard = [...leaderboard, ...mockUsers];
+    // Only add as many mock users as needed to reach the target size
+    const needed = TARGET_SIZE - leaderboard.length;
+    const mockToAdd = allMockUsers.slice(0, needed);
+    leaderboard = [...leaderboard, ...mockToAdd];
     leaderboard.sort((a, b) => b.points - a.points);
   }
 
