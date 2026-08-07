@@ -66,6 +66,11 @@ const deleteTransaction = async (id: string, userId?: string) => {
     throw new AppError("Transaction not found", 404);
   }
 
+  // Only allow the owner to delete
+  if (userId && transaction.userId && transaction.userId !== userId) {
+    throw new AppError("Unauthorized to delete this transaction", 403);
+  }
+
   await prisma.transaction.delete({
     where: { id },
   });
