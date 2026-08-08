@@ -20,6 +20,7 @@ router.post("/upload-avatar", auth("user", "admin"), UserController.uploadAvatar
 router.post("/me/claim-daily-login", auth("user", "admin"), UserController.claimDailyLogin);
 router.post("/me/claim-daily-tx", auth("user", "admin"), UserController.claimDailyTx);
 router.post("/me/add-points", auth("user", "admin"), UserController.addPoints);
+router.post("/me/financial-report", auth("user", "admin"), UserController.sendFinancialReport);
 router.get("/leaderboard", auth("user", "admin"), UserController.getLeaderboard);
 
 router.get("/", auth("admin"), UserController.getAllUsers);

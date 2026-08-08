@@ -130,6 +130,18 @@ const getLeaderboard = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const sendFinancialReport = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user!;
+  const result = await UserService.sendFinancialReport(user.id);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Financial report sent successfully",
+    data: result,
+  });
+});
+
 export const UserController = {
   getMe,
   updateMe,
@@ -141,4 +153,5 @@ export const UserController = {
   claimDailyTx,
   addPoints,
   getLeaderboard,
+  sendFinancialReport,
 };

@@ -1,6 +1,7 @@
 import { AppError } from "../../error/AppError";
 import { prisma } from "../../lib/prisma";
 import { IUpdateProfile, IUpdateUserStatus } from "./user.interface";
+import { sendFinancialReportEmail } from "../../utils/sendEmail";
 
 const getBangladeshDateString = (date: Date = new Date()): string => {
   const bstDate = new Date(date.getTime() + 6 * 60 * 60 * 1000);
@@ -337,6 +338,84 @@ const getLeaderboard = async () => {
   return leaderboard;
 };
 
+const sendFinancialReport = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const recentTransactions = await prisma.transaction.findMany({
+    where: {
+      userId,
+      createdAt: {
+        gte: sevenDaysAgo,
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  let totalIncome = 0;
+  let totalExpense = 0;
+  const categoryTotals: Record<string, number> = {};
+
+  recentTransactions.forEach((tx) => {
+    if (tx.type === "income") {
+      totalIncome += tx.amount;
+    } else if (tx.type === "expense") {
+      totalExpense += tx.amount;
+      categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
+    }
+  });
+
+  const balanceChange = totalIncome - totalExpense;
+
+  const categoryBreakdown = Object.entries(categoryTotals)
+    .map(([category, amount]) => {
+      const percentage = totalExpense > 0 ? Math.round((amount / totalExpense) * 100) : 0;
+      return {
+        category,
+        amount,
+        percentage,
+      };
+    })
+    .sort((a, b) => b.amount - a.amount);
+
+  const startDateStr = getBangladeshDateString(sevenDaysAgo);
+  const endDateStr = getBangladeshDateString(new Date());
+
+  const mappedTx = recentTransactions.map((tx) => ({
+    title: tx.title,
+    amount: tx.amount,
+    type: tx.type,
+    category: tx.category,
+    date: getBangladeshDateString(tx.createdAt),
+  }));
+
+  await sendFinancialReportEmail(user.email, {
+    userName: user.name,
+    startDate: startDateStr,
+    endDate: endDateStr,
+    totalIncome,
+    totalExpense,
+    balanceChange,
+    categoryBreakdown,
+    recentTransactions: mappedTx,
+  });
+
+  return {
+    success: true,
+    message: "Report sent successfully to " + user.email,
+  };
+};
+
 export const UserService = {
   getMe,
   updateMe,
@@ -348,4 +427,5 @@ export const UserService = {
   claimDailyTxReward,
   addPointsSecure,
   getLeaderboard,
+  sendFinancialReport,
 };

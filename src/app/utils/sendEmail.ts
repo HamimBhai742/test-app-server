@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { getOTPEmailTemplate, getResetSuccessEmailTemplate, getWelcomeEmailTemplate } from "./templates";
+import { getOTPEmailTemplate, getResetSuccessEmailTemplate, getWelcomeEmailTemplate, getGoalSuccessEmailTemplate, getFinancialReportEmailTemplate, IFinancialReportTemplateParams, IGoalSuccessTemplateParams } from "./templates";
 
 export const sendOTPEmail = async (to: string, otp: string, name?: string) => {
   console.log(`\n==================================================`);
@@ -95,6 +95,70 @@ export const sendWelcomeEmail = async (to: string, name?: string) => {
       console.log(`✅ [EMAIL SENT] Welcome email successfully mailed to ${to}`);
     } catch (error) {
       console.error("❌ [EMAIL ERROR] Failed to send welcome email via SMTP:", error);
+    }
+  }
+};
+
+export const sendGoalSuccessEmail = async (to: string, params: Omit<IGoalSuccessTemplateParams, "appName">) => {
+  console.log(`\n==================================================`);
+  console.log(`🏆 [GOAL ACCOMPLISHED EMAIL] Email: ${to} | Goal: ${params.goalName}`);
+  console.log(`==================================================\n`);
+
+  const { subject, html } = getGoalSuccessEmailTemplate(params);
+
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || '"হিসাব কিতাব" <noreply@hisabkitab.com>',
+        to,
+        subject,
+        html,
+      });
+      console.log(`✅ [EMAIL SENT] Goal success congratulations mailed to ${to}`);
+    } catch (error) {
+      console.error("❌ [EMAIL ERROR] Failed to send goal email via SMTP:", error);
+    }
+  }
+};
+
+export const sendFinancialReportEmail = async (to: string, params: Omit<IFinancialReportTemplateParams, "appName">) => {
+  console.log(`\n==================================================`);
+  console.log(`📊 [FINANCIAL REPORT EMAIL] Email: ${to}`);
+  console.log(`==================================================\n`);
+
+  const { subject, html } = getFinancialReportEmailTemplate(params);
+
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || '"হিসাব কিতাব" <noreply@hisabkitab.com>',
+        to,
+        subject,
+        html,
+      });
+      console.log(`✅ [EMAIL SENT] Financial report successfully mailed to ${to}`);
+    } catch (error) {
+      console.error("❌ [EMAIL ERROR] Failed to send financial report email via SMTP:", error);
     }
   }
 };

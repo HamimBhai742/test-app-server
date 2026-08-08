@@ -1,6 +1,7 @@
 import { AppError } from "../../error/AppError";
 import { prisma } from "../../lib/prisma";
 import { ICreateGoal, IUpdateGoal, ISavingsLog } from "./goal.interface";
+import { sendGoalSuccessEmail } from "../../utils/sendEmail";
 
 const createGoal = async (userId: string, payload: ICreateGoal) => {
   const goal = await prisma.goal.create({
@@ -36,7 +37,18 @@ const updateGoal = async (id: string, userId: string, payload: IUpdateGoal) => {
   const updated = await prisma.goal.update({
     where: { id },
     data: payload,
+    include: { user: true },
   });
+
+  if (updated.isCompleted && !existing.isCompleted) {
+    sendGoalSuccessEmail(updated.user.email, {
+      goalName: updated.name,
+      targetAmount: updated.targetAmount,
+      pointsAwarded: updated.pointsAwarded,
+      name: updated.user.name,
+    }).catch((err) => console.error("Error sending goal success email:", err));
+  }
+
   return updated;
 };
 
@@ -73,13 +85,27 @@ const addSavings = async (goalId: string, userId: string, log: ISavingsLog) => {
   }
 
   const updatedHistory = [...existing.history, log];
+  const totalSavings = updatedHistory.reduce((sum, item) => sum + item.amount, 0);
+  const shouldMarkCompleted = totalSavings >= existing.targetAmount;
 
   const updated = await prisma.goal.update({
     where: { id: goalId },
     data: {
       history: updatedHistory,
+      ...(shouldMarkCompleted && !existing.isCompleted ? { isCompleted: true } : {}),
     },
+    include: { user: true },
   });
+
+  if (shouldMarkCompleted && !existing.isCompleted) {
+    sendGoalSuccessEmail(updated.user.email, {
+      goalName: updated.name,
+      targetAmount: updated.targetAmount,
+      pointsAwarded: updated.pointsAwarded,
+      name: updated.user.name,
+    }).catch((err) => console.error("Error sending goal success email:", err));
+  }
+
   return updated;
 };
 
