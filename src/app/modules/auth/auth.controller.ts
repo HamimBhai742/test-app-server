@@ -104,6 +104,17 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const verifyResetOTP = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.verifyResetOTP(req.body);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "OTP verified successfully",
+    data: result,
+  });
+});
+
 export const AuthController = {
   registerUser,
   verifyOTP,
@@ -114,4 +125,5 @@ export const AuthController = {
   googleLogin,
   forgotPassword,
   resetPassword,
+  verifyResetOTP,
 };

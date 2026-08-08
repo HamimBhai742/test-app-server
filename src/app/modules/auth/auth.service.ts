@@ -410,6 +410,28 @@ const resetPassword = async (payload: IResetPassword) => {
   };
 };
 
+const verifyResetOTP = async (payload: IVerifyOTP) => {
+  const user = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  if (!user.otp || user.otp !== payload.otp) {
+    throw new AppError("Invalid OTP code", 400);
+  }
+
+  if (user.otpExpires && new Date() > user.otpExpires) {
+    throw new AppError("OTP code has expired", 400);
+  }
+
+  return {
+    message: "OTP verified successfully",
+  };
+};
+
 export const AuthService = {
   registerUser,
   verifyOTP,
@@ -420,4 +442,5 @@ export const AuthService = {
   googleLogin,
   forgotPassword,
   resetPassword,
+  verifyResetOTP,
 };
