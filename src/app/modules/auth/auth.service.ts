@@ -4,7 +4,7 @@ import config from "../../../config";
 import { AppError } from "../../error/AppError";
 import { prisma } from "../../lib/prisma";
 import { OAuth2Client } from "google-auth-library";
-import { sendOTPEmail } from "../../utils/sendEmail";
+import { sendOTPEmail, sendResetSuccessEmail, sendWelcomeEmail } from "../../utils/sendEmail";
 import {
   IChangePassword,
   IGoogleLogin,
@@ -96,6 +96,9 @@ const verifyOTP = async (payload: IVerifyOTP) => {
       otpExpires: null,
     },
   });
+
+  // Send Welcome Email
+  await sendWelcomeEmail(updatedUser.email, updatedUser.name || undefined);
 
   const jwtPayload = {
     id: updatedUser.id,
@@ -228,6 +231,9 @@ const googleLogin = async (payload: IGoogleLogin) => {
         isVerified: true,
       },
     });
+
+    // Send Welcome Email for new Google user
+    await sendWelcomeEmail(user.email, user.name || undefined);
   } else {
     if (user.status === "blocked" || user.status === "inactive") {
       throw new AppError(`User account is ${user.status}`, 403);
@@ -404,6 +410,9 @@ const resetPassword = async (payload: IResetPassword) => {
       otpExpires: null,
     },
   });
+
+  // Send success confirmation email
+  await sendResetSuccessEmail(payload.email, user.name || undefined);
 
   return {
     message: "Password reset successfully",

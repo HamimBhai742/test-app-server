@@ -69,3 +69,68 @@ export const getResetPasswordEmailTemplate = ({
 
   return { subject, html };
 };
+
+export interface IResetSuccessTemplateParams {
+  name?: string;
+  appName?: string;
+}
+
+export const getResetSuccessEmailTemplate = ({
+  name = "ইউজার",
+  appName = "হিসাব কিতাব",
+}: IResetSuccessTemplateParams): { subject: string; html: string } => {
+  const subject = `${appName} - পাসওয়ার্ড পরিবর্তন সফল হয়েছে`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; padding: 30px 15px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+          <!-- Header Banner -->
+          <tr>
+            <td align="center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 32px 20px;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">${appName}</h1>
+              <p style="color: #d1fae5; margin: 4px 0 0 0; font-size: 13px;">নিরাপত্তা নোটিফিকেশন</p>
+            </td>
+          </tr>
+
+          <!-- Content Body -->
+          <tr>
+            <td style="padding: 32px 28px;">
+              <h2 style="font-size: 18px; color: #0f172a; margin-top: 0; margin-bottom: 12px;">প্রিয় ${name},</h2>
+              <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0;">
+                আপনার অ্যাকাউন্টের পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে। 
+              </p>
+              
+              <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 24px;">
+                <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.5;">
+                  <strong>নিরাপত্তা নোটিশ:</strong> আপনি যদি এই পরিবর্তনটি নিজে না করে থাকেন, তবে অবিলম্বে আমাদের সাপোর্ট টিমে যোগাযোগ করুন অথবা আপনার অ্যাকাউন্ট সুরক্ষিত করতে পদক্ষেপ নিন।
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="background-color: #f8fafc; padding: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8;">
+              <p style="margin: 0 0 6px 0;">© ${new Date().getFullYear()} ${appName}. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  return { subject, html };
+};
