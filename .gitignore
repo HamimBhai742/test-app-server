@@ -3,3 +3,4 @@ dist
 .env
 *.log
 src/config/hisab-kitab-c0a76-firebase-adminsdk-fbsvc-34b87022bf.json
+.vercel

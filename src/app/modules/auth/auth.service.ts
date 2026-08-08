@@ -12,6 +12,8 @@ import {
   IRegisterUser,
   IVerifyOTP,
   IResendOTP,
+  IForgotPassword,
+  IResetPassword,
 } from "./auth.interface";
 
 const googleClient = new OAuth2Client(config.google_client_id);
@@ -343,6 +345,71 @@ const refreshToken = async (token: string) => {
   return { accessToken };
 };
 
+const forgotPassword = async (payload: IForgotPassword) => {
+  const user = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const otp = generateOTP();
+  const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  await prisma.user.update({
+    where: { email: payload.email },
+    data: {
+      otp,
+      otpExpires,
+    },
+  });
+
+  // Send OTP Email
+  await sendOTPEmail(payload.email, otp);
+
+  return {
+    message: "OTP sent successfully",
+  };
+};
+
+const resetPassword = async (payload: IResetPassword) => {
+  const user = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  if (!user.otp || user.otp !== payload.otp) {
+    throw new AppError("Invalid OTP code", 400);
+  }
+
+  if (user.otpExpires && new Date() > user.otpExpires) {
+    throw new AppError("OTP code has expired", 400);
+  }
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.password_salt)
+  );
+
+  await prisma.user.update({
+    where: { email: payload.email },
+    data: {
+      password: hashedPassword,
+      otp: null,
+      otpExpires: null,
+    },
+  });
+
+  return {
+    message: "Password reset successfully",
+  };
+};
+
 export const AuthService = {
   registerUser,
   verifyOTP,
@@ -351,4 +418,6 @@ export const AuthService = {
   changePassword,
   refreshToken,
   googleLogin,
+  forgotPassword,
+  resetPassword,
 };

@@ -65,6 +65,26 @@ const resendOTPValidationSchema = z.object({
   }),
 });
 
+const forgotPasswordValidationSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
+  }),
+});
+
+const resetPasswordValidationSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
+    otp: z.string({ required_error: "OTP code is required" }),
+    newPassword: z
+      .string({ required_error: "New password is required" })
+      .min(6, "Password must be at least 6 characters"),
+  }),
+});
+
 export const AuthValidation = {
   registerValidationSchema,
   loginValidationSchema,
@@ -73,4 +93,6 @@ export const AuthValidation = {
   googleLoginValidationSchema,
   verifyOTPValidationSchema,
   resendOTPValidationSchema,
+  forgotPasswordValidationSchema,
+  resetPasswordValidationSchema,
 };
